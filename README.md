@@ -123,3 +123,67 @@ urlpatterns = [
  - python manage.py runserver 를 실행시켜 동작을 확인한다.
  - http://127.0.0.1:8000/sample/ 링크로 들어가 value 와 label, date string에 임의의 값을 할당하여 insert 한다.
  - machsql을 통해서 데이터가 정상적으로 입력되었는지 확인한다.
+
+# Appendix / Bulk Insert (Append)
+ - Django의 bulk_create를 이용해서 machbase에 임의의 데이터를 넣는 예제를 통해서 append를 수행하는 방식에 대해서 알아본다.
+ - 이전의 quickstart app의 진행 결과를 그대로 사용하여 진행한다.
+ - views.py 파일에 아래의 코드를 추가한다.
+ ```
+from django.http import HttpResponse
+import datetime
+import random
+ 
+def insert_bulk_data(request, label):
+    data = []
+    start_date = datetime.datetime(2021, 11, 18, 10, 00, 00)
+    time_gap = datetime.timedelta(seconds=10)
+    for i in range(100):
+        date_string = start_date + time_gap * i
+        data.append(SampleData(label=label, value=random.random()*10, date_string=date_string.strftime('%Y-%m-%d %H:%M:%S')))
+    SampleData.objects.using('machbase').bulk_create(data) # bulk insert 하는 경우 ORM 객체를 인스턴스로 만들어서 해당 리스트를 ORM의 bulk_create 메서드의 입력인자로 전해주면 된다.
+    html = f"<html><body><h1>SAVE {label} </body></html>"
+    return HttpResponse(html)
+ ```
+ - views에서 작성한 함수(controller)를 url에 route하기 위해서 quickstart의 urls.py 파일을 아래와 같이 수정한다.
+ ```
+  urlpatterns = [
+    ...
+    path('insert/<str:label>', views.insert_bulk_data),
+    ...
+]
+ ```
+ - python manage.py runserver 를 실행한 뒤, http://127.0.0.1:8000/insert/bulk_test 을 통해서 data insert를 진행한다.
+ - 동일한게 machsql을 통해서 data가 정상적으로 insert 되었는지 확인한다.
+ - insert 된 데이터를 ORM으로 select하여, label, time, value를 표로 반환해주는 API를 추가하여, ORM을 통해서 data select 하는 예제를 마무리한다.
+ - 데이터를 시각화 하는 controller를 추가하기 위해서 views.py 파일에 아래의 코드를 추가한다.
+ ```
+ def get_value_table(request, label):
+    value_list = SampleData.objects.using('machbase').filter(label=label)
+    table_header = """
+    <tr>
+        <th>Label</th>
+        <th>Value</th>
+        <th>Date</th>
+    </tr>
+    """
+    table_body = '\n'.join([f'<tr><td>{x.label}</td><td>{x.value}</td><td>{x.date_string}</td></tr>' for x in value_list])
+    body_test = f"""
+    <h1>{label} Description</h1>
+    <table>
+        {table_header}
+        {table_body}
+    </table>
+    """
+ 
+    html = f"<html><body>{body_test}</body></html>"
+    return HttpResponse(html)
+ ```
+ - views에서 작성한 함수(controller)를 url에 route하기 위해서 quickstart의 urls.py 파일을 아래와 같이 수정한다.
+ ```
+ urlpatterns = [
+    ...
+    path('table/<str:label>', views.get_value_table),
+    ...
+]
+ ```
+ - python manage.py runserver 를 실행한 뒤, http://127.0.0.1:8000/table/bulk_test 을 통해서 결과를 확인한다.
