@@ -1,5 +1,5 @@
 # Django_ORM
-
+아래의 모든 작업은 example 폴더에 구성되어 있습니다.
 # 1. Requirements install
 python -m pip install -r requirements.txt
 
