@@ -69,3 +69,57 @@ class SampleDataSerializer(serializers.HyperlinkedModelSerializer):
         model = SampleData
         fields = ('_RID', 'value', 'label', 'date_string')
  ```
+ 
+# 6. view.py 설정
+  - views.py파일에 아래의 코드들을 추가한다. viewset은 rest_framemwork의 기능과 http method를 연결하는 역할을 해주는 객체이다.
+  ```
+from django.shortcuts import render
+from rest_framework import viewsets
+from .serializers import SampleDataSerializer
+from .models import SampleData
+ 
+... 
+ 
+class SampleDataViewSet(viewsets.ModelViewSet):
+    queryset = SampleData.objects.using('machbase').all().order_by('_RID') # 반드시 models.py에서 정의한 ORM model 객체의 objects 필드에 using method에 'macbhase' 할당하여야 한다.
+    serializer_class = SampleDataSerializer
+  ```
+  
+# 7. urls.py 설정
+ - urls.py파일을 quickstart 폴더 아래에 생성하고, 아래의 코드들을 추가한다.
+ ```
+from django.urls import include, path
+from rest_framework import routers
+from . import views
+ 
+router = routers.DefaultRouter()
+router.register(r'sample', views.SampleDataViewSet)
+ 
+urlpatterns = [
+    path('', include(router.urls))
+]
+ ```
+ - mysite 폴더 아래에 있는 urls.py파일에 아래의 내용을 추가한다.
+ ```
+from django.contrib import admin
+from django.urls import path, include
+ 
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('quickstart.urls')),
+]
+ ```
+# 8. 마무리
+ - settings.py의 INSTALLED_APPS 필드에 'rest_framework'(추가로 사용하는 라이브러리)와 quickstart.apps.QuickstartConfig(생성한 app을 프로젝트에 등록하기 위함)를 추가한다.
+ ```
+ INSTALLED_APPS = [
+    ...
+    'quickstart.apps.QuickstartConfig',
+    'rest_framework'
+    ...
+]
+ ```
+ - python manage.py makemigrations → python manage.py migarte 를 통해서 project 상태를 업데이트 한다.
+ - python manage.py runserver 를 실행시켜 동작을 확인한다.
+ - http://127.0.0.1:8000/sample/ 링크로 들어가 value 와 label, date string에 임의의 값을 할당하여 insert 한다.
+ - machsql을 통해서 데이터가 정상적으로 입력되었는지 확인한다.
