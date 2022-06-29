@@ -1,7 +1,8 @@
 # Django_ORM
 기본적으로 연결 하고자 하는 Machbase에 다음의 Table들을 생성한다
 ```
-create table Sample (value double, label varchar(100), date_string varhar(100))의 로그 테이블과 Tag(name varchar(100) primary key, time datetime basetime, value double summarized)의 태그 테이블이 생성되어 있어야 한다.
+create table Sample (value double, label varchar(100), date_string varchar(100));
+create tagdata table Tag(name varchar(100) primary key, time datetime basetime, value double summarized);
 ```
 
 # Requirements install
