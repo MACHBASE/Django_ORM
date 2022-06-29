@@ -1,5 +1,11 @@
 # Django_ORM
 아래의 모든 작업은 example 폴더에 구성되어 있습니다.
+내용을 진행하기 전 아래의 Table을 machbase에 생성해놓아야 합니다.
+```
+create table Sample (value double, label varchar(100), date_string varchar(100));
+create tagdata table Tag(name varchar(100) primary key, time datetime basetime, value double summarized);
+```
+
 # 1. Requirements install
 python -m pip install -r requirements.txt
 
